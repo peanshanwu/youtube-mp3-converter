@@ -13,8 +13,6 @@ export default function Home() {
     setLoading(true);
     setMp3Link("");
 
-    console.log(url);
-
     try {
       const res = await axios.post("/api/download", { url });
       setMp3Link(res.data.downloadUrl);
