@@ -48,7 +48,7 @@ export default function Home() {
           placeholder="輸入 YouTube 連結"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded focus:ring-2 focus:ring-slate-500 focus:outline-none"
           required
         />
         <button
