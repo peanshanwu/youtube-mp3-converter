@@ -1,13 +1,14 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 import yt_dlp
 import os
-from fastapi.responses import FileResponse
+import uuid
 
 app = FastAPI()
 
-# CORS 設定
+# CORS 設定（開發中可開放所有來源）
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,9 +20,11 @@ class URLRequest(BaseModel):
     url: str
 
 @app.post("/download")
-async def download_audio(req: URLRequest):
+async def download_audio(req: URLRequest, request: Request):
     url = req.url
-    output_path = f"downloads/audio.mp3"
+    unique_id = str(uuid.uuid4())
+    filename = unique_id
+    output_path = f"downloads/{filename}"  # yt-dlp 會自動加 .mp3
 
     ydl_opts = {
         'format': 'bestaudio/best',
@@ -40,11 +43,24 @@ async def download_audio(req: URLRequest):
 
     os.makedirs("downloads", exist_ok=True)
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=True)  # 抓資料＋下載
+            title = info.get("title")
+            thumbnail = info.get("thumbnail")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-    return {"downloadUrl": f"http://localhost:8000/file/audio.mp3"}
+    base_url = str(request.base_url).rstrip("/")
+    return {
+        "downloadUrl": f"{base_url}/file/{filename}.mp3",
+        "title": title,
+        "thumbnail": thumbnail,
+    }
 
-@app.get("/file/audio.mp3")
-async def serve_file():
-    return FileResponse("downloads/audio.mp3", media_type='audio/mpeg', filename="audio.mp3")
+@app.get("/file/{filename}")
+async def serve_file(filename: str):
+    file_path = f"downloads/{filename}"
+    if os.path.exists(file_path):
+        return FileResponse(file_path, media_type='audio/mpeg', filename=filename)
+    return JSONResponse(status_code=404, content={"error": "File not found"})
