@@ -8,8 +8,8 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'https://youtube-mp3-converter.up.railway.app/:path*',
-        // destination: 'http://localhost:8000/:path*',
+        // destination: 'https://youtube-mp3-converter.up.railway.app/:path*',
+        destination: 'http://localhost:8000/:path*',
       },
     ]
   },
