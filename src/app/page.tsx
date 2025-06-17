@@ -9,24 +9,24 @@ import Spinner from "@/app/components/Spinner";
 export default function Home() {
   const [url, setUrl] = useState("");
   const [mp3Link, setMp3Link] = useState("");
-  const [title, setTitle] = useState("");
-  const [thumbnail, setThumbnail] = useState<string | null>(null);
+  const [youtubeTitle, setYoutubeTitle] = useState("");
+  const [youtubeThumbnail, setYoutubeThumbnail] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMp3Link("");
-    setTitle("");
-    setThumbnail(null);
+    setYoutubeTitle("");
+    setYoutubeThumbnail(null);
 
     try {
       const res = await axios.post("/api/download", { url });
       if (res?.data) {
         const { downloadUrl, title, thumbnail } = res.data;
         setMp3Link(downloadUrl);
-        setTitle(title);
-        setThumbnail(thumbnail);
+        setYoutubeTitle(title);
+        setYoutubeThumbnail(thumbnail);
         setUrl("");
       }
     } catch (err) {
@@ -60,16 +60,16 @@ export default function Home() {
         </button>
         {mp3Link && (
           <div>
-            {thumbnail && (
+            {youtubeThumbnail && (
               <Image
-                src={thumbnail}
+                src={youtubeThumbnail}
                 alt="YouTube Thumbnail"
                 width={480}
                 height={360}
                 className="w-full rounded mt-10"
               />
             )}
-            {title && <p className="my-4 font-bold ">{title}</p>}
+            {youtubeTitle && <p className="my-4 font-bold ">{youtubeTitle}</p>}
             <a
               href={mp3Link}
               className="text-slate-400 border p-2 rounded hover:bg-slate-800 hover:text-slate-500 transition font-bold"
